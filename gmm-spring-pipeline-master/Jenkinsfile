@@ -30,7 +30,7 @@ pipeline
           echo "PATH = ${PATH}"
           echo "M2_HOME = ${M2_HOME}"
         '''
-        withSonarQubeEnv('GMM BAH Incubator') {
+        // withSonarQubeEnv('GMM BAH Incubator') {
           script {
             // get existing quality gates
             def getExistingGate = {
@@ -44,7 +44,7 @@ pipeline
 
             // create new quality gates with conditions if they don't exist
             if(testGateId == null) {
-              def newQG = sh(script: "curl -u ${env.SONAR_AUTH_TOKEN}: -X POST -H 'Accept: application/json' -d \"name=${env.OPENSHIFT_TEST_NS}\" ${env.SONAR_HOST_URL}/api/qualitygates/create", returnStdout: true).trim() 
+              def newQG = sh(script: "curl -u ${env.SONAR_AUTH_TOKEN}: -X POST -H 'Accept: application/json' -d \"name=${env.OPENSHIFT_TEST_NS}\" ${env.SONAR_HOST_URL}/api/qualitygates/create", returnStdout: true).trim()
               testGateId = new groovy.json.JsonSlurperClassic().parseText(newQG).id
               sh "curl -u ${env.SONAR_AUTH_TOKEN}: -X POST -H \"Content-Type: application/x-www-form-urlencoded\" -d \"gateId=${testGateId}&period=1&metric=new_coverage&op=LT&error=80\" ${env.SONAR_HOST_URL}/api/qualitygates/create_condition"
               sh "curl -u ${env.SONAR_AUTH_TOKEN}: -X POST -H \"Content-Type: application/x-www-form-urlencoded\" -d \"gateId=${testGateId}&period=1&metric=new_maintainability_rating&op=GT&error=3\" ${env.SONAR_HOST_URL}/api/qualitygates/create_condition"
@@ -52,15 +52,15 @@ pipeline
               sh "curl -u ${env.SONAR_AUTH_TOKEN}: -X POST -H \"Content-Type: application/x-www-form-urlencoded\" -d \"gateId=${testGateId}&period=1&metric=new_security_rating&op=GT&error=3\" ${env.SONAR_HOST_URL}/api/qualitygates/create_condition"
             }
             if(preprodGateId == null) {
-              def newQG = sh(script: "curl -u ${env.SONAR_AUTH_TOKEN}: -X POST -H 'Accept: application/json' -d \"name=${env.OPENSHIFT_PREPROD_NS}\" ${env.SONAR_HOST_URL}/api/qualitygates/create", returnStdout: true).trim() 
+              def newQG = sh(script: "curl -u ${env.SONAR_AUTH_TOKEN}: -X POST -H 'Accept: application/json' -d \"name=${env.OPENSHIFT_PREPROD_NS}\" ${env.SONAR_HOST_URL}/api/qualitygates/create", returnStdout: true).trim()
               preprodGateId = new groovy.json.JsonSlurperClassic().parseText(newQG).id
               sh "curl -u ${env.SONAR_AUTH_TOKEN}: -X POST -H \"Content-Type: application/x-www-form-urlencoded\" -d \"gateId=${preprodGateId}&period=1&metric=new_coverage&op=LT&error=90\" ${env.SONAR_HOST_URL}/api/qualitygates/create_condition"
               sh "curl -u ${env.SONAR_AUTH_TOKEN}: -X POST -H \"Content-Type: application/x-www-form-urlencoded\" -d \"gateId=${preprodGateId}&period=1&metric=new_maintainability_rating&op=GT&error=2\" ${env.SONAR_HOST_URL}/api/qualitygates/create_condition"
               sh "curl -u ${env.SONAR_AUTH_TOKEN}: -X POST -H \"Content-Type: application/x-www-form-urlencoded\" -d \"gateId=${preprodGateId}&period=1&metric=new_reliability_rating&op=GT&error=2\" ${env.SONAR_HOST_URL}/api/qualitygates/create_condition"
               sh "curl -u ${env.SONAR_AUTH_TOKEN}: -X POST -H \"Content-Type: application/x-www-form-urlencoded\" -d \"gateId=${preprodGateId}&period=1&metric=new_security_rating&op=GT&error=2\" ${env.SONAR_HOST_URL}/api/qualitygates/create_condition"
-            }	
+            }
             if(prodGateId == null) {
-              def newQG = sh(script: "curl -u ${env.SONAR_AUTH_TOKEN}: -X POST -H 'Accept: application/json' -d \"name=${env.OPENSHIFT_PROD_NS}\" ${env.SONAR_HOST_URL}/api/qualitygates/create", returnStdout: true).trim() 
+              def newQG = sh(script: "curl -u ${env.SONAR_AUTH_TOKEN}: -X POST -H 'Accept: application/json' -d \"name=${env.OPENSHIFT_PROD_NS}\" ${env.SONAR_HOST_URL}/api/qualitygates/create", returnStdout: true).trim()
               prodGateId = new groovy.json.JsonSlurperClassic().parseText(newQG).id
               sh "curl -u ${env.SONAR_AUTH_TOKEN}: -X POST -H \"Content-Type: application/x-www-form-urlencoded\" -d \"gateId=${prodGateId}&period=1&metric=new_coverage&op=LT&error=100\" ${env.SONAR_HOST_URL}/api/qualitygates/create_condition"
               sh "curl -u ${env.SONAR_AUTH_TOKEN}: -X POST -H \"Content-Type: application/x-www-form-urlencoded\" -d \"gateId=${prodGateId}&period=1&metric=new_maintainability_rating&op=GT&error=1\" ${env.SONAR_HOST_URL}/api/qualitygates/create_condition"
@@ -81,13 +81,13 @@ pipeline
             // provision projects if they doesn't exist
             if(testProject.empty) {
               sh "curl -u ${env.SONAR_AUTH_TOKEN}: -X POST -H \"Content-Type: application/x-www-form-urlencoded\" -d \"key=${env.PROJECT_NAME}:${env.OPENSHIFT_TEST_NS}&name=${env.PROJECT_NAME}:${env.OPENSHIFT_TEST_NS}\" ${env.SONAR_HOST_URL}/api/projects/create"
-            } 
+            }
             if(preprodProject.empty) {
               sh "curl -u ${env.SONAR_AUTH_TOKEN}: -X POST -H \"Content-Type: application/x-www-form-urlencoded\" -d \"key=${env.PROJECT_NAME}:${env.OPENSHIFT_PREPROD_NS}&name=${env.PROJECT_NAME}:${env.OPENSHIFT_PREPROD_NS}\" ${env.SONAR_HOST_URL}/api/projects/create"
-            } 
+            }
             if(prodProject.empty) {
               sh "curl -u ${env.SONAR_AUTH_TOKEN}: -X POST -H \"Content-Type: application/x-www-form-urlencoded\" -d \"key=${env.PROJECT_NAME}:${env.OPENSHIFT_PROD_NS}&name=${env.PROJECT_NAME}:${env.OPENSHIFT_PROD_NS}\" ${env.SONAR_HOST_URL}/api/projects/create"
-            } 
+            }
 
             // bind quality gates to projects before scan
             sh "curl -u ${env.SONAR_AUTH_TOKEN}: -X POST -H \"Content-Type: application/x-www-form-urlencoded\" -d \"gateId=${testGateId}&projectKey=${env.PROJECT_NAME}:${env.OPENSHIFT_TEST_NS}\" ${env.SONAR_HOST_URL}/api/qualitygates/select"
@@ -108,32 +108,32 @@ pipeline
     }
 
     //****************************************
-    stage('Unit Testing - DEV') {
-      steps {
-        echo 'junit and code coverage...'
-        sh 'mvn clean test'
-      }
-    }
+    // stage('Unit Testing - DEV') {
+    //   steps {
+    //     echo 'junit and code coverage...'
+    //     sh 'mvn clean test'
+    //   }
+    // }
 
     //****************************************
-    stage('Sonarqube Scan - DEV') {
-      steps {
-        withSonarQubeEnv('GMM BAH Incubator') {
-          sh "/var/lib/jenkins/tools/hudson.plugins.sonar.SonarRunnerInstallation/Default/bin/sonar-scanner -Dsonar.projectName=${env.PROJECT_NAME}:${OPENSHIFT_DEV_NS} -Dsonar.projectKey=${env.PROJECT_NAME}:${OPENSHIFT_DEV_NS}"
-          echo "Results are here: ${env.SONAR_CONSOLE_URL}${env.PROJECT_NAME}:${env.OPENSHIFT_DEV_NS}"
-        }
-      }
-    }
+    // stage('Sonarqube Scan - DEV') {
+    //   steps {
+    //     // withSonarQubeEnv('GMM BAH Incubator') {
+    //       sh "/var/lib/jenkins/tools/hudson.plugins.sonar.SonarRunnerInstallation/Default/bin/sonar-scanner -Dsonar.projectName=${env.PROJECT_NAME}:${OPENSHIFT_DEV_NS} -Dsonar.projectKey=${env.PROJECT_NAME}:${OPENSHIFT_DEV_NS}"
+    //       echo "Results are here: ${env.SONAR_CONSOLE_URL}${env.PROJECT_NAME}:${env.OPENSHIFT_DEV_NS}"
+    //     }
+    //   }
+    // }
 
     //****************************************
-    stage('Clean DBs in DEV*')
-    {
-      steps
-      {
-        echo 'Resetting the DBs...'
-        sleep 5
-      }
-    }
+    // stage('Clean DBs in DEV*')
+    // {
+    //   steps
+    //   {
+    //     echo 'Resetting the DBs...'
+    //     sleep 5
+    //   }
+    // }
 
     //****************************************
     stage('Deploy to DEV')
@@ -144,138 +144,138 @@ pipeline
         withEnv(["SKIP_TLS=1"])
         {
           echo 'Deploying....'
-          openshiftBuild apiURL: "${env.OPENSHIFT_API_URL}", authToken: "${env.OPENSHIFT_AUTH_TOKEN}", bldCfg: 'bahgmm-spring-pipeline', buildName: '', checkForTriggeredDeployments: 'true', commitID: '', namespace: "${OPENSHIFT_DEV_NS}", showBuildLogs: 'true', verbose: 'false', waitTime: '', waitUnit: 'sec'
+          openshiftBuild apiURL: "${env.OPENSHIFT_API_URL}", authToken: "${env.OPENSHIFT_AUTH_TOKEN}", bldCfg: 'gmm-spring-pipeline', buildName: '', checkForTriggeredDeployments: 'true', commitID: '', namespace: "example-project", showBuildLogs: 'true', verbose: 'false', waitTime: '', waitUnit: 'sec'
       }
         sleep 5
       }
     }
 
     //****************************************
-    stage('Post-Deployment Tests - DEV')
-    {
-      steps
-      {
-        parallel(
-          'API/Functional*':
-          {
-            echo 'API/Functional testing...'
-          },
-          'Security: Endpoint Scanning*':
-          {
-            echo 'Security: Endpoint Scanning...'
-          },
-          'Integration':
-          {
-            echo 'Integration Testing...'
-          }
-        )
-      }
-    }
+    // stage('Post-Deployment Tests - DEV')
+    // {
+    //   steps
+    //   {
+    //     parallel(
+    //       'API/Functional*':
+    //       {
+    //         echo 'API/Functional testing...'
+    //       },
+    //       'Security: Endpoint Scanning*':
+    //       {
+    //         echo 'Security: Endpoint Scanning...'
+    //       },
+    //       'Integration':
+    //       {
+    //         echo 'Integration Testing...'
+    //       }
+    //     )
+    //   }
+    // }
 
     //****************************************
-    stage('Unit Testing - TEST') {
-      steps {
-        echo 'junit and code coverage...'
-        sh 'mvn clean test'
-      }
-    }
+    // stage('Unit Testing - TEST') {
+    //   steps {
+    //     echo 'junit and code coverage...'
+    //     sh 'mvn clean test'
+    //   }
+    // }
+    //
+    // //****************************************
+    // stage('Sonarqube Scan - TEST') {
+    //   steps {
+    //     // withSonarQubeEnv('GMM BAH Incubator') {
+    //       sh "/var/lib/jenkins/tools/hudson.plugins.sonar.SonarRunnerInstallation/Default/bin/sonar-scanner -Dsonar.projectName=${env.PROJECT_NAME}:${env.OPENSHIFT_TEST_NS} -Dsonar.projectKey=${env.PROJECT_NAME}:${env.OPENSHIFT_TEST_NS}"
+    //       echo "Results are here: ${env.SONAR_CONSOLE_URL}${env.PROJECT_NAME}:${env.OPENSHIFT_TEST_NS}"
+    //     }
+    //   }
+    // }
+    //
+    // //****************************************
+    // // stage("Quality Gate - TEST") {
+    //   steps {
+    //     timeout(time: 1, unit: 'MINUTES') {
+    //       script {
+    //         def qg = waitForQualityGate()
+    //         if (qg.status != 'OK') {
+    //           error "Pipeline aborted due to quality gate failure: ${qg.status}"
+    //         }
+    //       }
+    //     }
+    //   }
+    // }
+    //
+    // //****************************************
+    // stage('Deploy to TEST')
+    // // {
+    //   steps
+    //     {
+    //       withEnv(["SKIP_TLS=1"])
+    //       {
+    //         echo 'Deploying....'
+    //         openshiftBuild apiURL: "${env.OPENSHIFT_API_URL}", authToken: "${env.OPENSHIFT_AUTH_TOKEN}", bldCfg: 'bahgmm-spring-pipeline', buildName: '', checkForTriggeredDeployments: 'true', commitID: '', namespace: "${env.OPENSHIFT_TEST_NS}", showBuildLogs: 'true', verbose: 'false', waitTime: '', waitUnit: 'sec'
+    //       }
+    //       sleep 5
+    //     }
+    // }
+    //
+    // //****************************************
+    // stage('Post-Deployment Tests - TEST')
+    // // {
+    //   steps
+    //   {
+    //     parallel(
+    //       'API/Functional*':
+    //       {
+    //         echo 'API/Functional testing...'
+    //       },
+    //       'Security: Endpoint Scanning*':
+    //       {
+    //         echo 'Security: Endpoint Scanning...'
+    //       },
+    //       'Integration':
+    //       {
+    //         echo 'Integration Testing...'
+    //       }
+    //     )
+    //   }
+    // }
+    //
+    // //****************************************
+    // stage('Performance Tests')
+    // // {
+    //   steps
+    //   {
+    //     parallel(
+    //       'Penetration*':
+    //       {
+    //         echo 'Security: Penetration Testing*...'
+    //       },
+    //       'Performance*':
+    //       {
+    //         echo 'Performance Testing...'
+    //       },
+    //       'SQL Injection*':
+    //       {
+    //         echo 'Security: SQL Injection Testing...'
+    //       },
+    //       'Docker Image Scan*':
+    //       {
+    //         echo 'Docker Image Scanning...'
+    //       }
+    //     )
+    //   }
+    // }
+    //
+    // //****************************************
+    // stage('Unit Testing - PREPROD') {
+    //   // steps {
+    //     echo 'junit and code coverage...'
+    //     sh 'mvn clean test'
+    //   }
+    // }
 
     //****************************************
-    stage('Sonarqube Scan - TEST') {
-      steps {
-        withSonarQubeEnv('GMM BAH Incubator') {
-          sh "/var/lib/jenkins/tools/hudson.plugins.sonar.SonarRunnerInstallation/Default/bin/sonar-scanner -Dsonar.projectName=${env.PROJECT_NAME}:${env.OPENSHIFT_TEST_NS} -Dsonar.projectKey=${env.PROJECT_NAME}:${env.OPENSHIFT_TEST_NS}"
-          echo "Results are here: ${env.SONAR_CONSOLE_URL}${env.PROJECT_NAME}:${env.OPENSHIFT_TEST_NS}"
-        }
-      }
-    }
-
-    //****************************************
-    stage("Quality Gate - TEST") {
-      steps {
-        timeout(time: 1, unit: 'MINUTES') { 
-          script {
-            def qg = waitForQualityGate()
-            if (qg.status != 'OK') {
-              error "Pipeline aborted due to quality gate failure: ${qg.status}"
-            }
-          }
-        }
-      }
-    }
-
-    //****************************************
-    stage('Deploy to TEST')
-    {
-      steps
-        {
-          withEnv(["SKIP_TLS=1"])
-          {
-            echo 'Deploying....'
-            openshiftBuild apiURL: "${env.OPENSHIFT_API_URL}", authToken: "${env.OPENSHIFT_AUTH_TOKEN}", bldCfg: 'bahgmm-spring-pipeline', buildName: '', checkForTriggeredDeployments: 'true', commitID: '', namespace: "${env.OPENSHIFT_TEST_NS}", showBuildLogs: 'true', verbose: 'false', waitTime: '', waitUnit: 'sec'
-          }
-          sleep 5
-        }
-    }
-
-    //****************************************
-    stage('Post-Deployment Tests - TEST')
-    {
-      steps
-      {
-        parallel(
-          'API/Functional*':
-          {
-            echo 'API/Functional testing...'
-          },
-          'Security: Endpoint Scanning*':
-          {
-            echo 'Security: Endpoint Scanning...'
-          },
-          'Integration':
-          {
-            echo 'Integration Testing...'
-          }
-        )
-      }
-    }
-
-    //****************************************
-    stage('Performance Tests')
-    {
-      steps
-      {
-        parallel(
-          'Penetration*':
-          {
-            echo 'Security: Penetration Testing*...'
-          },
-          'Performance*':
-          {
-            echo 'Performance Testing...'
-          },
-          'SQL Injection*':
-          {
-            echo 'Security: SQL Injection Testing...'
-          },
-          'Docker Image Scan*':
-          {
-            echo 'Docker Image Scanning...'
-          }
-        )
-      }
-    }
-
-    //****************************************
-    stage('Unit Testing - PREPROD') {
-      steps {
-        echo 'junit and code coverage...'
-        sh 'mvn clean test'
-      }
-    }
-
-    //****************************************
-    stage('Sonarqube Scan - PREPROD') {
+    // stage('Sonarqube Scan - PREPROD') {
       steps {
         withSonarQubeEnv('GMM BAH Incubator') {
           sh "/var/lib/jenkins/tools/hudson.plugins.sonar.SonarRunnerInstallation/Default/bin/sonar-scanner -Dsonar.projectName=${env.PROJECT_NAME}:${env.OPENSHIFT_PREPROD_NS} -Dsonar.projectKey=${env.PROJECT_NAME}:${env.OPENSHIFT_PREPROD_NS}"
@@ -285,9 +285,9 @@ pipeline
     }
 
     //****************************************
-    stage("Quality Gate - PREPROD") {
+    // stage("Quality Gate - PREPROD") {
       steps {
-        timeout(time: 1, unit: 'MINUTES') { 
+        timeout(time: 1, unit: 'MINUTES') {
           script {
             def qg = waitForQualityGate()
             if (qg.status != 'OK') {
@@ -299,8 +299,8 @@ pipeline
     }
 
     //****************************************
-    stage('Deploy to PRE-PROD')
-    {
+    // stage('Deploy to PRE-PROD')
+    // {
       steps
         {
           withEnv(["SKIP_TLS=1"])
@@ -313,7 +313,7 @@ pipeline
     }
 
     //****************************************
-    stage('End to End Testing*')
+    // stage('End to End Testing*')
     {
       steps
         {
@@ -323,40 +323,40 @@ pipeline
     }
 
     //****************************************
-    stage('Unit Testing - PROD') {
-      steps {
-        echo 'junit and code coverage...'
-        sh 'mvn clean test'
-      }
-    }
+    // stage('Unit Testing - PROD') {
+    //   steps {
+    //     echo 'junit and code coverage...'
+    //     sh 'mvn clean test'
+    //   }
+    // }
+
+    // //****************************************
+    // stage('Sonarqube Scan - PROD') {
+    //   steps {
+    //     withSonarQubeEnv('GMM BAH Incubator') {
+    //       sh "/var/lib/jenkins/tools/hudson.plugins.sonar.SonarRunnerInstallation/Default/bin/sonar-scanner -Dsonar.projectName=${env.PROJECT_NAME}:${env.OPENSHIFT_PROD_NS} -Dsonar.projectKey=${env.PROJECT_NAME}:${env.OPENSHIFT_PROD_NS}"
+    //       echo "Results are here: ${env.SONAR_CONSOLE_URL}${env.PROJECT_NAME}:${env.OPENSHIFT_PROD_NS}"
+    //     }
+    //   }
+    // }
+    //
+    // //****************************************
+    // stage("Quality Gate - PROD") {
+    //   steps {
+    //     timeout(time: 1, unit: 'MINUTES') {
+    //       script {
+    //         def qg = waitForQualityGate()
+    //         if (qg.status != 'OK') {
+    //           error "Pipeline aborted due to quality gate failure: ${qg.status}"
+    //         }
+    //       }
+    //     }
+    //   }
+    // }
 
     //****************************************
-    stage('Sonarqube Scan - PROD') {
-      steps {
-        withSonarQubeEnv('GMM BAH Incubator') {
-          sh "/var/lib/jenkins/tools/hudson.plugins.sonar.SonarRunnerInstallation/Default/bin/sonar-scanner -Dsonar.projectName=${env.PROJECT_NAME}:${env.OPENSHIFT_PROD_NS} -Dsonar.projectKey=${env.PROJECT_NAME}:${env.OPENSHIFT_PROD_NS}"
-          echo "Results are here: ${env.SONAR_CONSOLE_URL}${env.PROJECT_NAME}:${env.OPENSHIFT_PROD_NS}"
-        }
-      }
-    }
-
-    //****************************************
-    stage("Quality Gate - PROD") {
-      steps {
-        timeout(time: 1, unit: 'MINUTES') { 
-          script {
-            def qg = waitForQualityGate()
-            if (qg.status != 'OK') {
-              error "Pipeline aborted due to quality gate failure: ${qg.status}"
-            }
-          }
-        }
-      }
-    }
-
-    //****************************************
-    stage('Deploy to PROD')
-    {
+    // stage('Deploy to PROD')
+    // {
       steps
         {
           withEnv(["SKIP_TLS=1"])
