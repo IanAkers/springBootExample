@@ -23,17 +23,23 @@ pipeline
   stages //list of stages specifying in which stage the pipeline steps will be executed
   {
 
-    stage('Deploy to PROD')
+
+    stage('Deploy to DEV')
     {
+
       steps
+      {
+        withEnv(["SKIP_TLS=1"])
         {
-          withEnv(["SKIP_TLS=1"])
-          {
-            echo 'Deploying....'
-            openshiftBuild apiURL: "${env.OPENSHIFT_API_URL}", authToken: "${env.OPENSHIFT_AUTH_TOKEN}", bldCfg: 'bahgmm-spring-pipeline', buildName: '', checkForTriggeredDeployments: 'true', commitID: '', namespace: "${env.OPENSHIFT_PROD_NS}", showBuildLogs: 'true', verbose: 'false', waitTime: '', waitUnit: 'sec'
-          }
-        }
+          echo 'Deploying....'
+          openshiftBuild apiURL: "${env.OPENSHIFT_API_URL}", authToken: "${env.OPENSHIFT_AUTH_TOKEN}", bldCfg: 'bgmm-spring-pipeline', buildName: '', checkForTriggeredDeployments: 'true', commitID: '', namespace: "${OPENSHIFT_DEV_NS}", showBuildLogs: 'true', verbose: 'false', waitTime: '', waitUnit: 'sec'
+      }
+        sleep 5
+      }
     }
+
+
+
 
   }
 }
