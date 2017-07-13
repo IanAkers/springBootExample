@@ -32,7 +32,7 @@ pipeline
         withEnv(["SKIP_TLS=1"])
         {
           echo 'Deploying....'
-          openshiftBuild apiURL: "${env.OPENSHIFT_API_URL}", authToken: "${env.OPENSHIFT_AUTH_TOKEN}", bldCfg: 'bgmm-spring-pipeline', buildName: '', checkForTriggeredDeployments: 'true', commitID: '', namespace: "${OPENSHIFT_DEV_NS}", showBuildLogs: 'true', verbose: 'false', waitTime: '', waitUnit: 'sec'
+          openshiftBuild apiURL: "${env.OPENSHIFT_API_URL}", authToken: "${env.OPENSHIFT_AUTH_TOKEN}", bldCfg: 'gmm-spring-pipeline', buildName: '', checkForTriggeredDeployments: 'true', commitID: '', namespace: "example-project", showBuildLogs: 'true', verbose: 'false', waitTime: '', waitUnit: 'sec'
       }
         sleep 5
       }
